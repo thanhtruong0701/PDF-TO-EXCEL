@@ -11,7 +11,10 @@ import pandas as pd
 import openpyxl
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.utils import get_column_letter
-import pymupdf
+try:
+    import pymupdf
+except ImportError:
+    import fitz as pymupdf
 
 st.set_page_config(
     page_title="Camelot — PDF ➜ Excel",
