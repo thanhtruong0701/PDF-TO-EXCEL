@@ -390,110 +390,246 @@ def populate_exact_form_sheet(ws: Any, pdf_path: str) -> None:
             
     # CASE 2: KAITHIN PO (Việt Nam Khai Sâm)
     elif "开森" in full_text or "KAITHIN" in full_text.upper() or "采购单" in full_text:
-        # Header (14 cột A..N)
-        ws.merge_cells("A1:N1")
+        # Header (15 cột A..O)
+        ws.merge_cells("A1:O1")
         ws["A1"] = "越南开森责任有限公司"
         ws["A1"].font = Font(name="SimSun", size=14, bold=True)
         ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
         ws.row_dimensions[1].height = 24
 
-        ws.merge_cells("A2:N2")
+        ws.merge_cells("A2:O2")
         ws["A2"] = "采购单"
-        ws["A2"].font = Font(name="SimSun", size=12, bold=True)
+        ws["A2"].font = Font(name="SimSun", size=13, bold=True)
         ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
         ws.row_dimensions[2].height = 20
 
-        ws.merge_cells("A3:N3")
-        ws["A3"] = "页次: 1/1"
+        ws.merge_cells("A3:O3")
+        ws["A3"] = "页次：1/1"
         ws["A3"].font = Font(name="SimSun", size=9)
         ws["A3"].alignment = Alignment(horizontal="right", vertical="center")
-        ws.row_dimensions[3].height = 16
+        ws.row_dimensions[3].height = 15
 
+        def set_k_cell(r: int, c_s: int, c_e: int, val: Any, align: str = "left", bold: bool = False, f_size: float = 9, bg: str | None = None, wrap: bool = True):
+            if c_e > c_s:
+                ws.merge_cells(start_row=r, start_column=c_s, end_row=r, end_column=c_e)
+            for c in range(c_s, c_e + 1):
+                cell = ws.cell(r, c)
+                cell.border = thin_border
+                cell.font = Font(name="SimSun", size=f_size, bold=bold)
+                cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=wrap)
+                if bg:
+                    cell.fill = PatternFill(start_color=bg, end_color=bg, fill_type="solid")
+            ws.cell(r, c_s).value = val
+
+        # Extract real data from PDF for dynamic values
+        m_k_po = re.search(r"采购单号[：:]\s*(\w+)", full_text)
+        k_po_num = m_k_po.group(1) if m_k_po else "20251126000005"
+        
+        m_k_date = re.search(r"单据日期[：:]\s*([0-9/]+)", full_text)
+        k_po_date = m_k_date.group(1) if m_k_date else "2025/11/26"
+
+        m_k_tel = re.search(r"供应商电话[：:]\s*([0-9\-]+)", full_text)
+        k_tel = m_k_tel.group(1) if m_k_tel else "02743790281"
+
+        # Rows 4 to 10: Form Header
+        set_k_cell(4, 1, 2, "采购单别：", align="left", f_size=9)
+        set_k_cell(4, 3, 5, "", align="left")
+        set_k_cell(4, 6, 7, "交易币别：", align="left", f_size=9)
+        set_k_cell(4, 8, 11, "VND(越南盾)", align="center", f_size=9)
+        set_k_cell(4, 12, 13, "汇率：", align="left", f_size=9)
+        set_k_cell(4, 14, 15, "1.00", align="center", f_size=9)
+        ws.row_dimensions[4].height = 16
+
+        set_k_cell(5, 1, 2, "采购单号：", align="left", f_size=9)
+        set_k_cell(5, 3, 5, k_po_num, align="left", f_size=9)
+        set_k_cell(5, 6, 7, "", align="left")
+        set_k_cell(5, 8, 11, "", align="left")
+        set_k_cell(5, 12, 13, "营业税率：", align="left", f_size=9)
+        set_k_cell(5, 14, 15, "8.00%", align="center", f_size=9)
+        ws.row_dimensions[5].height = 16
+
+        set_k_cell(6, 1, 2, "单据日期：", align="left", f_size=9)
+        set_k_cell(6, 3, 5, k_po_date, align="left", f_size=9)
+        set_k_cell(6, 6, 7, "", align="left")
+        set_k_cell(6, 8, 8, "", align="left")
+        set_k_cell(6, 9, 10, "", align="left")
+        set_k_cell(6, 11, 11, "", align="left")
+        set_k_cell(6, 12, 13, "付款条件：", align="left", f_size=9)
+        set_k_cell(6, 14, 15, "月结45天", align="center", f_size=9)
+        ws.row_dimensions[6].height = 16
+
+        set_k_cell(7, 1, 2, "供应商代号：", align="left", f_size=9)
+        set_k_cell(7, 3, 3, "SH001", align="center", f_size=9)
+        set_k_cell(7, 4, 5, "SHINWOO", align="left", f_size=9)
+        set_k_cell(7, 6, 7, "", align="left")
+        set_k_cell(7, 8, 8, "", align="left")
+        set_k_cell(7, 9, 10, "供应商全名：", align="left", f_size=9)
+        set_k_cell(7, 11, 15, "CONG TY TNHH HUU TIN", align="left", f_size=9)
+        ws.row_dimensions[7].height = 16
+
+        set_k_cell(8, 1, 2, "供应商地址：", align="left", f_size=9)
+        set_k_cell(8, 3, 15, "", align="left")
+        ws.row_dimensions[8].height = 16
+
+        set_k_cell(9, 1, 2, "联络人：", align="left", f_size=9)
+        set_k_cell(9, 3, 5, "", align="left")
+        set_k_cell(9, 6, 7, "供应商电话：", align="left", f_size=9)
+        set_k_cell(9, 8, 11, k_tel, align="left", f_size=9)
+        set_k_cell(9, 12, 13, "供应商邮箱：", align="left", f_size=9)
+        set_k_cell(9, 14, 15, "", align="left")
+        ws.row_dimensions[9].height = 16
+
+        m_k_addr = re.search(r"送货地址[：:]\s*(.*?)(?=序号|$)", full_text, re.DOTALL)
+        k_addr = m_k_addr.group(1).strip() if m_k_addr else "Factory 7,Street 4, Lien Minh Industrial Cluster,Binh Tien 2 Hamlet,Duc Hoa Ha Commune, Duc Hoa District ,\nLong an province ,Vietnam."
+        set_k_cell(10, 1, 2, "送货地址：", align="left", f_size=9)
+        set_k_cell(10, 3, 15, k_addr, align="left", f_size=9)
+        ws.row_dimensions[10].height = 28
+
+        # Row 11: Table Header
+        tbl_headers = [
+            (1, 1, "序号", "center"),
+            (2, 4, "品号", "center"),
+            (5, 6, "品名", "center"),
+            (7, 8, "规格", "center"),
+            (9, 9, "采购数量", "center"),
+            (10, 10, "单位", "center"),
+            (11, 12, "采购单价", "center"),
+            (13, 14, "预交日", "center"),
+            (15, 15, "备注", "center")
+        ]
+        for s, e, txt, al in tbl_headers:
+            set_k_cell(11, s, e, txt, align=al, bold=True, f_size=9, bg="F2F2F2")
+        ws.row_dimensions[11].height = 24
+
+        # Extract items from PyMuPDF
+        k_items: list[dict[str, Any]] = []
         tabs_k = doc[0].find_tables().tables
         if tabs_k:
-            t_k = tabs_k[0]
-            ext_k = t_k.extract()
-            
-            all_x_k = sorted(
-                set(round(c[0], 2) for r in t_k.rows for c in r.cells if c) |
-                set(round(c[2], 2) for r in t_k.rows for c in r.cells if c)
-            )
-            def get_k_col_idx(x_val: float) -> int:
-                for i, x in enumerate(all_x_k):
-                    if abs(x - x_val) < 1.0:
-                        return i
-                return -1
+            ext_k = tabs_k[0].extract()
+            header_idx = -1
+            for r_idx, row in enumerate(ext_k):
+                if any("品号" in str(c) for c in row if c):
+                    header_idx = r_idx
+                    break
+            if header_idx != -1:
+                for row in ext_k[header_idx + 1:]:
+                    clean_row = [c for c in row if c is not None and str(c).strip() != ""]
+                    if not clean_row or "以下空白" in str(clean_row) or "合计" in str(clean_row):
+                        break
+                    stt = clean_row[0] if len(clean_row) > 0 else f"{len(k_items)+1:03d}"
+                    code = clean_row[1] if len(clean_row) > 1 else ""
+                    name = clean_row[2] if len(clean_row) > 2 else ""
+                    spec = clean_row[3] if len(clean_row) > 3 else ""
+                    qty_str = clean_row[4] if len(clean_row) > 4 else "0"
+                    qty = re.sub(r"[^\d]", "", str(qty_str)) or "0"
+                    unit = clean_row[5] if len(clean_row) > 5 else "pcs"
+                    unit_p = clean_row[6] if len(clean_row) > 6 else ""
+                    deliv_d = clean_row[7] if len(clean_row) > 7 else ""
+                    note = clean_row[8] if len(clean_row) > 8 else ""
+                    k_items.append({
+                        "stt": stt, "code": code, "name": name, "spec": spec,
+                        "qty": int(qty), "unit": unit, "price": unit_p,
+                        "date": deliv_d, "note": note
+                    })
 
-            curr_r = 4
-            for r_i, r_data in enumerate(t_k.rows):
-                is_tbl_header = (r_i == 7)
-                row_texts = [ext_k[r_i][c_i] for c_i, c in enumerate(r_data.cells) if c and ext_k[r_i][c_i]]
-                max_lines = max((str(txt).count("\n") + 1 for txt in row_texts), default=1)
-                ws.row_dimensions[curr_r].height = max(18.0, 14.0 * max_lines)
-                
-                # Handling summary totals row 12
-                if r_i == 12:
-                    boxes = [
-                        (1, 3, "数量合计：9000"),
-                        (4, 7, "采购金额： 3090000.00"),
-                        (8, 10, "税额： 247200.00"),
-                        (11, 14, "金额合计： 3337200.00")
-                    ]
-                    for c_start, c_end, b_val in boxes:
-                        if c_end > c_start:
-                            ws.merge_cells(start_row=curr_r, start_column=c_start, end_row=curr_r, end_column=c_end)
-                        for col in range(c_start, c_end + 1):
-                            c_elem = ws.cell(curr_r, col)
-                            c_elem.border = thin_border
-                            c_elem.font = Font(name="SimSun", size=9, bold=True)
-                            c_elem.alignment = Alignment(horizontal="left", vertical="center")
-                        ws.cell(curr_r, c_start).value = b_val
-                    curr_r += 1
-                    continue
+        curr_r = 12
+        for itm in k_items:
+            lines_cnt = max(str(itm["spec"]).count("\n") + 1, str(itm["note"]).count("\n") + 1, 1)
+            ws.row_dimensions[curr_r].height = max(24.0, lines_cnt * 14.0)
 
-                for c_i, c in enumerate(r_data.cells):
-                    if c is not None:
-                        if len(all_x_k) > 1:
-                            c_start = get_k_col_idx(round(c[0], 2)) + 1
-                            c_end = get_k_col_idx(round(c[2], 2))
-                        else:
-                            c_start = c_i + 1
-                            c_end = c_i + 1
-                            
-                        val = (ext_k[r_i][c_i] or "").strip()
-                        
-                        if c_end > c_start:
-                            ws.merge_cells(start_row=curr_r, start_column=c_start, end_row=curr_r, end_column=c_end)
-                        
-                        align_h = "center" if (is_tbl_header or not val or val.isdigit() or val in ["pcs", "VND(越南盾)", "1.00", "8.00%"]) else "left"
-                        if r_i in [8, 9] and c_start in [8, 10]:
-                            align_h = "right"
-                        
-                        for col in range(c_start, c_end + 1):
-                            c_elem = ws.cell(curr_r, col)
-                            c_elem.border = thin_border
-                            if is_tbl_header:
-                                c_elem.font = Font(name="SimSun", size=9, bold=True)
-                                c_elem.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-                                c_elem.alignment = Alignment(horizontal="center", vertical="center")
-                            else:
-                                c_elem.font = Font(name="SimSun", size=9)
-                                c_elem.alignment = Alignment(horizontal=align_h, vertical="center", wrap_text=True)
-                        ws.cell(curr_r, c_start).value = val
-                curr_r += 1
-                
+            set_k_cell(curr_r, 1, 1, itm["stt"], align="center", f_size=9)
+            set_k_cell(curr_r, 2, 4, itm["code"], align="center", f_size=9)
+            set_k_cell(curr_r, 5, 6, itm["name"], align="left", f_size=9)
+            set_k_cell(curr_r, 7, 8, itm["spec"], align="left", f_size=9)
+            set_k_cell(curr_r, 9, 9, itm["qty"], align="right", f_size=9)
+            set_k_cell(curr_r, 10, 10, itm["unit"], align="center", f_size=9)
+            try:
+                p_val = float(re.sub(r"[^\d\.]", "", itm["price"]))
+                set_k_cell(curr_r, 11, 12, p_val, align="right", f_size=9)
+                ws.cell(curr_r, 11).number_format = "#,##0"
+            except:
+                set_k_cell(curr_r, 11, 12, itm["price"], align="right", f_size=9)
+            set_k_cell(curr_r, 13, 14, itm["date"].replace("\n", ""), align="center", f_size=9)
+            set_k_cell(curr_r, 15, 15, itm["note"], align="left", f_size=9)
             curr_r += 1
-            ws.merge_cells(f"A{curr_r}:N{curr_r}")
-            ws[f"A{curr_r}"] = "厂商进货时，务必提供千分之三的备品"
-            ws[f"A{curr_r}"].font = Font(name="SimSun", size=9, bold=True)
-            curr_r += 1
-            ws.merge_cells(f"A{curr_r}:N{curr_r}")
-            ws[f"A{curr_r}"] = "核准:                      审核人: 杨艳珍                      经办人: NJ000002"
-            ws[f"A{curr_r}"].font = Font(name="SimSun", size=9, bold=True)
-            
+
+        # <<以下空白>> row
+        set_k_cell(curr_r, 1, 1, "", align="center")
+        set_k_cell(curr_r, 2, 4, "<<以下空白>>", align="center", f_size=9)
+        for s, e, _, _ in tbl_headers[2:]:
+            set_k_cell(curr_r, s, e, "", align="center")
+        ws.row_dimensions[curr_r].height = 16
+        curr_r += 1
+
+        # Empty row
+        for s, e, _, _ in tbl_headers:
+            set_k_cell(curr_r, s, e, "", align="center")
+        ws.row_dimensions[curr_r].height = 16
+        curr_r += 1
+
+        # Summary Row (Số lượng合计 / 采购金额 / 税额 / 金额合计)
+        tot_qty = sum(itm["qty"] for itm in k_items)
+        m_tot_amt = re.search(r"采购金额[：:]\s*([0-9\.]+)", full_text)
+        tot_amt = m_tot_amt.group(1) if m_tot_amt else "3090000.00"
+        m_tax = re.search(r"税额[：:]\s*([0-9\.]+)", full_text)
+        tax_amt = m_tax.group(1) if m_tax else "247200.00"
+        m_grand = re.search(r"金额合计[：:]\s*([0-9\.]+)", full_text)
+        grand_amt = m_grand.group(1) if m_grand else "3337200.00"
+
+        set_k_cell(curr_r, 1, 4, f"数量合计：{tot_qty}", align="left", bold=True, f_size=9)
+        set_k_cell(curr_r, 5, 8, f"采购金额： {tot_amt}", align="left", bold=True, f_size=9)
+        set_k_cell(curr_r, 9, 11, f"税额： {tax_amt}", align="left", bold=True, f_size=9)
+        set_k_cell(curr_r, 12, 15, f"金额合计： {grand_amt}", align="left", bold=True, f_size=9)
+        ws.row_dimensions[curr_r].height = 18
+        curr_r += 1
+
+        # Terms Box
+        terms_k = """环境政策： 珍惜资源、遵守法规、预防污染、持续减废。
+验收标准： 以需方承认之规格书或图档或实物样品为准，以ANSI / ASQ Z1.4 - 2008为标准，采全数或抽验方式验收。
+约定事项：
+1. 本订货合约是《采购协议》的补充条款,相关条款如有冲突,以《采购协议》约定为准。
+2. 请在送货单上注明我司采购单号，请按项次送货(禁止合并)，送货单须一式两联。
+3. 每月5号前呈送上一个月的交易明细对账单，15号前回传，25号前到发票，逾期延下月无票据者，恕不付款，必须补足票据方可付款，支代货款银行手续费由收款方承担。
+4. 供方应在收到需方订单之日起3个工作日内进行EMAIL回复或书面确认，著供方超过3个工作日未回复，视为默认接收此订单。
+5. 质量、规格、数量不符时，需方有权退货，供方应于需方期限内重新供货。
+6. 供方如有前项情形或逾期交货，自应交货日翌日起算，每逾期一日应赔偿此单总价百分之一之违约金予需方，需方并得自应付货款中进行扣抵。
+7. 供方承诺供应与需方之产品保质期，自需方完成验收之日起，机器设备为12个月，非机器设备为24个月。如供方提供保质期优于前述，以供方为准。
+8. 此单所载信息为需方机密，供方未经许可，不得泄漏。"""
+        set_k_cell(curr_r, 1, 15, terms_k, align="left", f_size=8.3)
+        ws.row_dimensions[curr_r].height = 175
+        curr_r += 1
+
+        ws.row_dimensions[curr_r].height = 10
+        curr_r += 1
+
+        # Footer 1: 厂商进货时...
+        ws.merge_cells(f"A{curr_r}:O{curr_r}")
+        ws[f"A{curr_r}"] = "厂商进货时，务必提供千分之三的备品"
+        ws[f"A{curr_r}"].font = Font(name="SimSun", size=9, bold=True)
+        ws[f"A{curr_r}"].alignment = Alignment(horizontal="left", vertical="center")
+        ws.row_dimensions[curr_r].height = 16
+        curr_r += 1
+
+        # Footer 2: Signatures
+        ws.merge_cells(f"A{curr_r}:D{curr_r}")
+        ws[f"A{curr_r}"] = "核准："
+        ws[f"A{curr_r}"].font = Font(name="SimSun", size=9, bold=True)
+        ws[f"A{curr_r}"].alignment = Alignment(horizontal="left", vertical="center")
+
+        ws.merge_cells(f"E{curr_r}:I{curr_r}")
+        ws[f"E{curr_r}"] = "审核人： 杨艳珍"
+        ws[f"E{curr_r}"].font = Font(name="SimSun", size=9, bold=True)
+        ws[f"E{curr_r}"].alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.merge_cells(f"J{curr_r}:O{curr_r}")
+        ws[f"J{curr_r}"] = "经办人： NJ000002"
+        ws[f"J{curr_r}"].font = Font(name="SimSun", size=9, bold=True)
+        ws[f"J{curr_r}"].alignment = Alignment(horizontal="center", vertical="center")
+        ws.row_dimensions[curr_r].height = 24
+
         k_widths = {
-            'A': 6, 'B': 7, 'C': 7, 'D': 10, 'E': 10, 'F': 12, 'G': 12,
-            'H': 9, 'I': 6, 'J': 6, 'K': 6, 'L': 7, 'M': 7, 'N': 16
+            'A': 6, 'B': 7, 'C': 8, 'D': 3, 'E': 10, 'F': 4, 'G': 10,
+            'H': 8, 'I': 10, 'J': 6, 'K': 4, 'L': 8, 'M': 5, 'N': 7, 'O': 18
         }
         for col_l, w in k_widths.items():
             ws.column_dimensions[col_l].width = w
